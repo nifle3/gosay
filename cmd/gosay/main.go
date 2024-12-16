@@ -1,14 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"log"
+	"os"
 
-	"github.com/nifle3/gosay/internal/image"
+	"github.com/nifle3/gosay/internal/command"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
-	_, err := fmt.Print(image.Gopher)
-	if err != nil {
-		fmt.Print("OOPS")
+	cmd := &cli.Command{
+		Commands: []*cli.Command{
+			command.Say,
+			command.Scream,
+		},
+	}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err.Error())
 	}
 }

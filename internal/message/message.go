@@ -1,29 +1,77 @@
 package message
 
-import "unicode/utf8"
+import (
+	"strings"
+	"unicode/utf8"
+)
 
-func Generate(maxWorldInRow int, message string) string {
-	messages := splitMessageInRow(maxWorldInRow, message)
+func generate(maxLenOfRow int, words []string, builder *strings.Builder) {
+	maxLenOfRow = getMaxLenOfRow(words, maxLenOfRow)
+	generateMessage(maxLenOfRow, words, builder)
+	generateTail(3, maxLenOfRow, builder)
+}
 
-	if len(messages) > 1 {
-
+func getMaxLenOfRow(words []string, maxlenOfRow int) int {
+	for _, val := range words {
+		valLen := utf8.RuneCountInString(val)
+		if valLen > maxlenOfRow {
+			maxlenOfRow = valLen
+		}
 	}
 
-	return message
+	return maxlenOfRow
 }
 
-func splitMessageInRow(maxWorldInRow int, message string) []string {
-	if utf8.RuneCountInString(message) < maxWorldInRow {
-		return []string{message}
+func generateMessage(maxLenOfRow int, message []string, builder *strings.Builder) {
+	generateTopAndBottom(maxLenOfRow, builder)
+	genrateBodyOfMessage(maxLenOfRow, message, builder)
+	generateTopAndBottom(maxLenOfRow, builder)
+}
+
+func genrateBodyOfMessage(maxLenOfRow int, words []string, builder *strings.Builder) {
+	rowBuilder := strings.Builder{}
+	currentLenOfRow := 0
+
+	for _, val := range words {
+		valLen := utf8.RuneCountInString(val)
+
+		if currentLenOfRow+valLen+1 <= maxLenOfRow {
+			rowBuilder.WriteString(val + " ")
+			currentLenOfRow += valLen + 1
+			continue
+		}
+
+		if rowBuilder.Len() > 0 {
+			row := rowBuilder.String()
+			generateRowOfMessage(row, builder)
+		}
+
+		rowBuilder.Reset()
+		rowBuilder.WriteString(val + " ")
+		currentLenOfRow = valLen + 1
 	}
 
-	return nil
+	if rowBuilder.Len() > 0 {
+		row := rowBuilder.String()
+		generateRowOfMessage(row, builder)
+	}
 }
 
-func generateMultiRow(maxWorldInRow int, messsage []string) {
-
+func generateTopAndBottom(length int, builder *strings.Builder) {
+	builder.WriteString(" ")
+	builder.WriteString(strings.Repeat("-", length))
+	builder.WriteString("\n")
 }
 
-func generateOneRow(message string) {
+func generateRowOfMessage(message string, builder *strings.Builder) {
+	builder.WriteString("|")
+	builder.WriteString(message)
+	builder.WriteString("|\n")
+}
 
+func generateTail(length, width int, builder *strings.Builder) {
+	for i := 0; i < length; i++ {
+		builder.WriteString(strings.Repeat(" ", width+i))
+		builder.WriteString("\\\n")
+	}
 }
